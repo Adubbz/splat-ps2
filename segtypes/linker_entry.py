@@ -206,13 +206,17 @@ class LinkerWriter:
                 and cur_section == ".data"
                 and entry.segment.type != "lib"
             ):
-                path_cname = re.sub(
-                    r"[^0-9a-zA-Z_]",
-                    "_",
-                    str(entry.segment.dir / entry.segment.name)
-                    + ".".join(entry.object_path.suffixes[:-1]),
-                )
-                self._write_symbol(path_cname, ".")
+                seg_out_path = entry.segment.out_path()
+
+                # Only write the section symbol if this is not a c file, or if it is a c file and the c file actually exists
+                if seg_out_path.suffix != '.c' or seg_out_path.exists():
+                    path_cname = re.sub(
+                        r"[^0-9a-zA-Z_]",
+                        "_",
+                        str(entry.segment.dir / entry.segment.name)
+                        + ".".join(entry.object_path.suffixes[:-1]),
+                    )
+                    self._write_symbol(path_cname, ".")
 
             wildcard = "*" if options.opts.ld_wildcard_sections else ""
 
