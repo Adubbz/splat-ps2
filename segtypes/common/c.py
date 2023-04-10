@@ -183,8 +183,9 @@ class CommonSegC(CommonSegCodeSubsegment):
             # Check and create the C file
             c_path = self.out_path()
             if c_path:
-                if not c_path.exists() and options.opts.create_c_files:
-                    self.create_c_file(asm_out_dir, c_path, symbols_entries)
+                if not c_path.exists():
+                    if options.opts.create_c_files:
+                        self.create_c_file(asm_out_dir, c_path, symbols_entries)
                     is_new_c_file = True
 
                 self.create_asm_dependencies_file(
