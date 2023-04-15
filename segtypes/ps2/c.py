@@ -25,7 +25,7 @@ SUBSTITUTIONS = {
 
     # Temporary registers
     '$t0': '$8',
-    '$t1': '$0',
+    '$t1': '$9',
     '$t2': '$10',
     '$t3': '$11',
     '$t4': '$12',
