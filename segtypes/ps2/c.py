@@ -55,6 +55,10 @@ SUBSTITUTIONS = {
 
     # Q register
     '$Q': 'Q',
+
+    # trunc.w.s should actually be cvt.w.s
+    # See: https://github.com/Decompollaborate/rabbitizer/blob/40257d064931d415e5efec16844bb4083c145bc1/include/instructions/instr_id/r5900/r5900_cop1_fpu_s.inc#L106-L110
+    'trunc.w.s': 'cvt.w.s',
 }
 
 class Ps2SegC(CommonSegC):
