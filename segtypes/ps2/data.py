@@ -1,4 +1,4 @@
-from segtypes.ps2 import linker_utils
+from segtypes.ps2 import ps2_utils
 from segtypes.common.group import CommonSegGroup
 from segtypes.common.data import CommonSegData
 from segtypes.common.codesubsegment import CommonSegCodeSubsegment
@@ -20,7 +20,7 @@ class Ps2SegData(CommonSegData):
         from segtypes.linker_entry import LinkerEntry
 
         if self.should_linker_use_asm():
-            return linker_utils.get_asm_linker_entries(self)
+            return ps2_utils.get_asm_linker_entries(self)
 
         return super().get_linker_entries()
     

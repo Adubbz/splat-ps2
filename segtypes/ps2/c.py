@@ -1,3 +1,4 @@
+import copy
 from pathlib import Path
 from typing import Optional, Set, List, Tuple
 
@@ -6,7 +7,7 @@ import spimdisasm
 from util import options
 from util.symbols import Symbol
 
-from segtypes.ps2 import linker_utils
+from segtypes.ps2 import ps2_utils
 from segtypes.common.c import CommonSegC
 
 SUBSTITUTIONS = {
@@ -69,13 +70,29 @@ class Ps2SegC(CommonSegC):
         out_dir: Path,
         func_sym: Symbol,
     ):
-        outpath = out_dir / self.name / (func_sym.name + ".s")
+        outpath = out_dir / self.name / (ps2_utils.create_asm_file_name(func_sym) + ".s")
 
         # Skip extraction if the file exists and the symbol is marked as extract=false
         if outpath.exists() and not func_sym.extract:
             return
 
-        super().create_c_asm_file(func_rodata_entry, out_dir, func_sym)
+        outpath.parent.mkdir(parents=True, exist_ok=True)
+
+        with outpath.open("w", newline="\n") as f:
+            if options.opts.asm_inc_header:
+                f.write(
+                    options.opts.c_newline.join(options.opts.asm_inc_header.split("\n"))
+                )
+
+            func_rodata_entry.writeToFile(f)
+
+            if func_rodata_entry.function is not None:
+                self.check_gaps_in_migrated_rodata(
+                    func_rodata_entry.function, func_rodata_entry.rodataSyms
+                )
+                self.check_gaps_in_migrated_rodata(
+                    func_rodata_entry.function, func_rodata_entry.lateRodataSyms
+                )
 
         # Perform substitutions on register names
         with open(outpath, 'r') as f:
@@ -86,6 +103,8 @@ class Ps2SegC(CommonSegC):
                 for old, new in SUBSTITUTIONS.items():
                     line = line.replace(old, new)
                 f.write(line)
+
+        self.log(f"Disassembled {func_sym.name} to {outpath}")
 
     # Modify linker script generation to use individual .s.o files
     def get_linker_entries(self) -> "List[LinkerEntry]":
@@ -98,6 +117,6 @@ class Ps2SegC(CommonSegC):
                 # Include the C file in the linker script
                 return [LinkerEntry(self, [path], path, self.get_linker_section())]
             else:
-                return linker_utils.get_asm_linker_entries(self)
+                return ps2_utils.get_asm_linker_entries(self)
         else:
             return []
